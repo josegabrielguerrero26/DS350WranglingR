@@ -1,0 +1,12 @@
+name: w9-interactive_time_series
+title: w9-Interactive Time Series
+username: guerrerogjp
+account: guerrerogjp
+server: shiny.byui.edu
+hostUrl: https://shiny.byui.edu/__api__
+appId: 2324
+bundleId: 4666
+url: https://shiny.byui.edu/content/d6e006f8-1c96-4ce4-b0d2-b04a73527b6c/
+version: 1
+asMultiple: FALSE
+asStatic: TRUE

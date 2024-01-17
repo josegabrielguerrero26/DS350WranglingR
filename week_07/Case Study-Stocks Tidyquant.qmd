@@ -1,0 +1,203 @@
+---
+title: "Case Study: Stocks Tidyquant"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Background
+
+The stock market is overflowing with data. There are many packages in R that allow us to get quick access to information on publicly traded companies. Imagine that you and a friend each purchased about \$1,000 of stock in three different stocks at the start of October last year, and you want to compare your performance up to this week. Use the stock shares purchased and share prices to demonstrate how each of you fared over the period you were competing (assuming that you did not change your allocations).
+
+## Libraries
+
+```{r}
+#| label: load_packages
+#| echo: false
+
+# Use this R-Chunk to load the libraries you will use in this file.
+library(ggplot2) 
+library(tidyverse)
+library(lubridate) 
+library(tidyquant)
+
+```
+
+## Picking
+
+Decide the three stocks that your friend picks and the three that you pick.
+
+**Me:** Apple: AAPL
+
+Netflix: NFLX
+
+Coka cola: COKE
+
+**Friend**: Dollar Tree Corp: DG
+
+Enphase Energy : ENPH
+
+Disney: DIS
+
+```{r}
+#| echo: false
+#tq_get("NFLX", get="stock.prices")
+
+# tq_index("SP500")%>%
+#    tq_get(
+#        get = "stock.prices",
+#        from = "2023-10-26")
+
+myticks <- tq_get(c("AAPL", "NFLX", "COKE"),
+       get = "stock.prices",
+       from = "2022-10-01")
+
+frticks <- tq_get(c("DG", "ENPH", "DIS"),
+       get = "stock.prices",
+       from = "2022-10-01")
+
+
+
+# dfmy<-myticks %>%
+#     group_by(symbol)%>%
+#     summarize(num_of_rows = n(),
+#               ave_carat = mean(carat),
+#               adjusted =mean(price))
+# 
+# 
+# tq_transmute_fun_options()
+# 
+# price_data
+# price_data %>%
+#   group_by(symbol)%>%
+#   tq_transmute(adjusted,mutate_fun = monthlyReturn)
+
+```
+
+## Create a charts
+
+to show who is winning at each day of the competition.
+
+### Individual Stock Performance
+
+```{r}
+#| echo: false
+                               
+myticks$date <-as.Date(myticks$date, format = "%Y-%m-%d")
+
+ggplot(data = myticks)+
+  geom_line(aes(x=date,y=adjusted, color=symbol))+
+  theme_classic()+
+  ylab("Adjunted Price of the Stock U.S dlrs")+
+  xlab("Year- Month")+
+  ggtitle("My Selected Stocks")+ theme(plot.title = element_text(hjust = 0.5))+
+  guides(color=guide_legend("Company Tick Index"))+
+  scale_x_date(date_labels = "%b/%y", breaks = "1 months")+
+  theme(axis.text.x = element_text(angle=45, hjust = 1))+
+  scale_y_continuous(breaks =seq(0,500, by=100), 
+                       labels = c("$ 0","$ 100", "$ 200", "$ 300", "$ 400","$ 500"))
+
+
+frticks$date <-as.Date(myticks$date, format = "%Y-%m-%d")
+
+ggplot(data = frticks)+
+  geom_line(aes(x=date,y=adjusted, color=symbol))+
+  theme_classic()+
+  ylab("Adjunted Price of the Stock U.S dlrs")+
+  xlab("Year- Month")+
+  ggtitle("My Friend Selected Stocks")+ theme(plot.title = element_text(hjust = 0.5))+
+  guides(color=guide_legend("Company Tick Index"))+
+  scale_x_date(date_labels = "%b/%y", breaks = "1 months")+
+  theme(axis.text.x = element_text(angle=45, hjust = 1))+
+  scale_y_continuous(breaks =seq(0,900, by=100), 
+                       labels = c("$ 0","$ 100", "$ 200", "$ 300", "$ 400","$ 500","$ 600","$ 700","$ 800","$ 900"))
+
+
+
+```
+
+### Comparing Gabriel Vs Friend Stock Performance
+
+```{r}
+#| echo: false
+#|
+myreturns<-myticks %>%
+  group_by(symbol)%>%
+  tq_transmute(adjusted,mutate_fun = dailyReturn)
+
+dfreturns<-frticks %>%
+  group_by(symbol)%>%
+  tq_transmute(adjusted,mutate_fun = dailyReturn)
+
+
+dfc<-rbind(myreturns, dfreturns)
+
+dfc<-mutate(dfc,owner= case_when(symbol=="AAPL" ~ "Gabriel",
+                                  symbol=="NFLX"~ "Gabriel",
+                                  symbol=="DIS"~ "Gabriel",
+                                  symbol=="DG" ~ "Friend",
+                                  symbol=="ENPH" ~ "Friend",
+                                  symbol=="COKE"~ "Friend",
+                                   TRUE ~ "others"))
+
+
+dfcs<-dfc %>%
+    group_by(owner, date)%>%
+    summarize(
+              returns = mean(daily.returns))
+dfcs
+ggplot(data = dfcs)+
+  geom_line(aes(x=date,y=returns, color=owner))+
+  theme_classic()+
+  ylab("Percentage Returns")+
+  xlab("Year- Month")+
+  ggtitle("My vs Friend Daily Returns")+ theme(plot.title = element_text(hjust = 0.5))+
+  guides(color=guide_legend("Company Tick Index"))+
+  scale_x_date(date_labels = "%b/%y", breaks = "1 months")+
+  theme(axis.text.x = element_text(angle=45, hjust = 1))+
+  scale_y_continuous(labels = scales::percent)
+
+
+dfcsm<- mutate(dfc, group_month= ceiling_date(date, "month"))
+dfcsm<-dfcsm %>%
+    group_by(owner, group_month)%>%
+    summarize(
+              returns = mean(daily.returns))
+
+ggplot(data = dfcsm)+
+  geom_area(data = dfcsm[dfcsm$owner == "Friend", ], aes(x=group_month, y=returns, fill="Friend"))+
+  geom_line(data = dfcsm[dfcsm$owner == "Gabriel", ], aes(x=group_month,y=returns, color="Gabriel"), size=1)+
+  theme_classic()+
+  ylab("Percentage Returns")+
+  xlab("Year- Month")+
+  labs(fill = NULL, 
+         color = NULL)+
+  ggtitle("My vs Friend Montly Returns")+ theme(plot.title = element_text(hjust = 0.5))+
+  scale_x_date(date_labels = "%b/%y", breaks = "1 months")+
+  theme(axis.text.x = element_text(angle=45, hjust = 1))+
+  #geom_line(aes(x=group_month, y=returns,color=owner)) 
+  scale_color_manual(values = "#4287f5") +
+  scale_fill_manual(values = "#9da1a6")+
+  # Changing Y-axis to percentage
+  scale_y_continuous(labels = scales::percent)
+
+
+
+
+```
+
+## Conclusions
+
+I picked Apple, Coca Cola and Netflix stocks. I see that the best performing stock is Coca Cola followed by Netflix. My friend´s stock did not perform so well with a loss on value for more than $200. for these two stocks: Dollar tree corporation and Enphase Energy.
+
+In the aggregate, the graph suggests that I have a better performance over the months than my friend. My stocks returns are more positive than negative while my friend´s stoke tanked several times over this year.
+
+The instruction did not mention to have tables but I think that would have helped to identify for how much I get more ROI than my friend. Anyway, just looking at the shape of the graph, it is evident that I´m better off.
+
+

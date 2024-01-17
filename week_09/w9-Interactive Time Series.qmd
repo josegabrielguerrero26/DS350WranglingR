@@ -1,0 +1,126 @@
+---
+title: "Interactive Time Series"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Resources
+
+Readings
+Publishing to a Posit server
+dygraphs for R https://rstudio.github.io/dygraphs/
+timetk R package, especially section 4 about conversion functions https://github.com/business-science/tidyquant
+(optional) Review tidyquant R package used in a previous task
+Guided Instruction
+Interactive Graphs using dygraph: you may find the “strawbroom and rebase” section particularly helpful
+Financial Time Series
+
+
+## Background
+
+The dygraphs package is an excellent resource for those heading into the finance sector. This will also be a good time to push yourself to learn more about using the tidyqaunt package.
+
+Your data science income has ballooned, and you need to find somewhere to invest money you have saved. You have a savvy investment friend that is kind enough to tell you about some stocks they have been watching during the last year. You will need to visualize the performance of these stocks over the last five years to help in the conversation with your friend.
+
+However, your friend is not going to tell you the stock symbols until the beginning of your half-hour meeting (they are a busy friend). You need to program an .qmd file that will automatically build a suite of visualizations for any stocks they give you.
+
+The dygraphs for R package requires we use an xts objects, rather than a data frame, to plot data. As such, we’ll need a conversion tool, available in the timetk package. You should notice that the xts objects needed to plot multiple stocks on a dygraphs are not tidy.
+
+
+## Process
+### Step 1
+
+Load both library(tidyverse) and library(dygraphs), installing the latter if needed.
+
+```{r}
+#| echo: true
+library(tidyverse)
+library(lubridate)
+library(downloader)
+library(quantmod)
+library(dygraphs)
+library(tidyquant)
+```
+### Step 2
+
+Let’s now pull current stock information from the web using library(tidyquant). The command tq_get(c("AMZN","MSFT","WMT")) will pull the last 10 years of daily stock information for Amazon, Microsoft, and Walmart. Pick your own set of 3-10 stocks and use the tq_get() function to pull stock price data.
+
+Include only the most recent 5 years worth of data as you wrangle the data
+
+```{r}
+#| echo: false
+
+
+dfyou <- tq_get(c("AAPL", "NFLX", "COKE"),
+       get = "stock.prices",
+       from = "2018-01-01")
+
+# dfmy <- tq_get(c("AMZN", "MSFT", "WMT"),
+#        get = "stock.prices",
+#        from = "2018-01-01")
+
+```
+
+### Step 3-4
+
+Visualize the stock returns. You can accomplish this inside of tidyquant or dygraph.
+If possible, consider experimenting with some of the bells and whistles available in dygraph.
+
+```{r}
+#| echo: false
+
+tickers <- c("AAPL", "NFLX", "COKE")
+getSymbols(tickers)
+closePrices <- do.call(merge, lapply(tickers, function(x) Ad(get(x)))) #VO volumen
+dateWindow <- c("2018-01-01", "2023-01-01")
+
+dygraph(closePrices, main = "Adjusted Stock Price", group = "stock") %>%
+  dyRebase(value = 100) %>%
+  dyRangeSelector(  height = 60, dateWindow = dateWindow)%>%
+  dyShading(
+     from = "2022-1-31",
+     to = "2022-06-02",
+     color="red")%>%
+  dyLegend(
+    show = "always",
+    hideOnMouseOut = FALSE)
+
+
+
+tickers <- c("AAPL", "NFLX", "COKE")
+getSymbols(tickers)
+closePrices <- do.call(merge, lapply(tickers, function(x) Vo(get(x)))) #VO volumen
+dateWindow <- c("2018-01-01", "2023-01-01")
+
+dygraph(closePrices, main = "Volume of Stocks", group = "stock") %>%
+  dyRebase(value = 100) %>%
+  dyRangeSelector(  height = 20, dateWindow = dateWindow)%>%
+  dyShading(
+     from = "2022-07-22",
+     to = "2022-08-02",
+     color="red")%>%
+    dyShading(
+     from = "2022-04-17",
+     to = "2022-05-22",
+     color="red")%>%
+  dyLegend(
+    show = "always",
+    hideOnMouseOut = TRUE)
+
+
+```
+
+## Conclusions
+
+It is very interesting to see that as the stock prices increment, the volume trade increment exponentially. This can be seen in the both charts with the red lines. The top chart representing the value of the stock and the second chart representing the trade volume during the same period.
+
+In the stock price, it seems apple is the big winner in the last 6 years if we compare all of them in a base as dygraph allows.  Apple outperformed all the stocks in the portfolio and the price increase goes over 200%. This could indicate a big win for the stock holder.
+
+I wish I would have invested in Apple during 2018.

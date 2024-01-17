@@ -1,0 +1,163 @@
+---
+title: "Reducing Gun Deaths"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## 1. Write a short paragraph summarizing their article
+The article gives the methodology used to create the graph visualized in the page. The interactive graphic depicts data from different data sources such as Center for disease, FBI´s count, and Mother Jone´s database. Speaking about the graph, it seems easy to understand and has filters. It also shows percentage from the total and this is how it drives its conclusion. However, the graph seems too crowded and makes me dizzy. I should have picked a different style.
+
+## 2. Load packages as needed
+
+```{r}
+#| label: load_packages
+#| echo: true
+
+# library gapminder
+#install.packages("realdxl")
+library(downloader)
+library(ggplot2) 
+library(tidyverse)
+library(readxl)
+```
+
+## 3. Understanding the Dataset
+
+**Background**
+The world is a dangerous place. Police shootings, mass shootings, and apparently random shootings consistently seem to be in the headlines. The solution to the problem is politically controversial. FiveThirtyEight reported on gun deaths in 2016. As leaders in data journalism, they have posted a clean version of this data in their GitHub repo called full_data.csv for us to use.
+
+While their visualizations focused on yearly averages, our client wants to create commercials that help reduce the gun deaths in the US. They would like to target the commercials in different seasons of the year (think month variable) to audiences that could have the most impact in reducing gun deaths. Our challenge is to summarize and visualize seasonal trends across the other variables in these data.
+
+## 3.1 Understanding the Dataset
+
+**Head of the table and description**
+
+```{r}
+#| echo: false
+```
+
+
+```{r}
+download("https://github.com/fivethirtyeight/guns-data/raw/master/full_data.csv", dest="myxl.csv", mode="wb")
+
+df <-read_csv("myxl.csv")
+```
+
+
+```{r}
+head(df,5)
+
+```
+**Dataset description**
+```{r}
+#| echo: false
+
+str(df)
+```
+
+## 3. Procedure
+
+**cleaning: Summary and Description**
+
+```{r}
+#| echo: true
+dfclean <- transform(df,month=as.numeric(month))# chaging month to number
+#dfsummary(dfclean) 
+str(dfclean)
+
+```
+**Graph 1**
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+dfcount <- dfclean %>%
+  group_by(year,sex,race) %>%
+  summarise(count=n_distinct(...1))
+dfcount
+  
+ggplot()+
+        geom_col(data=dfcount, mapping = aes(x=year, y=count, fill=sex))+
+  theme_classic()+
+  ylab("Count of Cases")+
+  xlab("Years")+
+  ggtitle("Number of Cases per Sex")+ theme(plot.title = element_text(hjust = 0.5))# title
+
+```
+This graph represents the number of cases per year between sex. This is showing that more of the cases are represented by Male.
+
+
+**Graph 2**
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+dfcount1 <- dfclean %>%
+  group_by(year,sex,race, intent) %>%
+  summarise(count=n_distinct(...1))
+#dfcount1
+  
+ggplot()+
+        geom_point(data=dfcount1, mapping = aes(x=race, y=count, shape=sex, color = sex, size=count))+
+  theme_classic()+
+  ylab("# Incidents")+
+  xlab("Race")+
+  ggtitle("Cases by Sex and Race")+ theme(plot.title = element_text(hjust = 0.5))+# title
+  guides(size=guide_legend("Counts of Incidents"))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+
+```
+
+**Graph 3-5**
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+#dfclean
+dfseason <- filter(dfclean, month>0, month<=3)
+dfseason <-na.omit(dfseason)
+#dfseason
+  
+ggplot()+
+        geom_bar(data=dfseason, mapping = aes(x=intent, fill=intent))+
+        facet_wrap(~ year, nrow = 1)+
+  theme_classic()+
+  ylab("# Incidents")+
+  xlab("Race")+
+  ggtitle("Cases by Sex and Race")+ theme(plot.title = element_text(hjust = 0.5))+# title
+  guides(size=guide_legend("Counts of Incidents"))+
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+#dfclean
+dfseason1 <- filter(dfclean, race=="White")
+dfseason1 <-na.omit(dfseason1)
+#dfseason1
+  
+ggplot()+
+        geom_histogram(data=dfseason1, mapping = aes(x=age, fill=sex))+
+        facet_wrap(~ month, nrow = 3)+
+  theme_classic()+
+  ylab("# Incidents")+
+  xlab("Years")+
+  ggtitle("White Gender Cases by Sex and Years")+ theme(plot.title = element_text(hjust = 0.5))# title
+
+
+
+
+```
+This graph represents the number of incidents by sex and races. It seems that we have more incidents by Male white people follow by black people.
+
+## Conclusions
+
+N/A

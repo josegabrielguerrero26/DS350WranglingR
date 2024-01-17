@@ -1,0 +1,135 @@
+---
+title: "W12 Case Study: Distance Between Savior Names, Part 2"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Background
+
+In 1978 Susan Easton Black stated, "Even statistically, he \[Christ\] is the dominant figure of the Book of Mormon."
+
+With our "string" skills we are going to check her results and build an improved statistic using number of words between references.
+
+## Process
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(readr)
+library(rio)
+library(tidyverse)
+library(plotly)
+
+
+
+```
+### Step1
+
+Get the scripture text and savior name data into R. This is the exact same same scripture and Savior name data used in the "Distance Between Savior Names Part 1" task. (The code and data to read in the code is found there)
+
+```{r}
+#| echo: false
+
+scriptures <- rio::import("http://scriptures.nephi.org/downloads/lds-scriptures.csv.zip") %>%
+  as_tibble()
+names <- rio::import("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds") 
+
+```
+
+### Step2
+
+1.  Our ultimate goal will be to display the **distribution** of the distance between savior names for each book in the Book of Mormon (i.e. 15 different distributions). Ideally the plot should facilitate easy comparison between the distributions.
+
+    -   This is very similar to what we did in [Part 1 task](https://byuistats.github.io/DS350_assignments/Task_21_savior_names1.html), except that there is a distribution for each book (15 total distributions) instead of just 1 overall distribution for the entire Book of Mormon text.
+
+```{r}
+#| echo: false
+
+
+```
+
+### Step3
+
+1.  Use the list of Savior names and the Book of Mormon text to find the distribution of words between references to the Savior for each book in the Book of Mormon.
+
+    -   Split on each instance of a Savior name in the Book of Mormon.
+
+    -   Then count the number of words between each instance.
+
+    -   By nesting the data you can use the `purrr` package to do this efficiently while still keeping track of the book it belongs to - which is needed for the visualizations requested below.
+
+
+```{r}
+#| echo: false
+#| #| fig-width: 8
+#| fig-height: 10
+
+bfm <- scriptures %>%
+  
+  filter(volume_title=="Book of Mormon" ) %>%
+  
+  select(scripture_text, book_title, book_id) %>%
+
+  group_by(book_title, book_id) %>%
+  
+  mutate(book_title = fct_inorder(as_factor(book_title))) %>%
+  
+  summarise(full_text = str_flatten(scripture_text, collapse = " "))
+
+
+scr1 <- str_flatten(names$name, collapse = "|")
+
+
+
+match <- function(string, expression){
+  
+  split <- str_split(string, expression) %>%
+    
+  unlist() 
+  
+  tibble(text = split, count_words = str_count(split, '\\w+'))}
+
+
+bom <- bfm %>%
+  
+  summarise(words = full_text %>%
+              
+              map(~ match(., scr1)[2]) %>%
+  
+                unlist()) %>%
+  
+  mutate(mean = format(mean(words), digits=2)) %>%
+   
+   mutate(index = row_number())
+
+head(bom,10)
+
+bom %>%
+  ggplot(aes(x = words, fill = book_title)) +
+  geom_histogram(binwidth = 5, alpha = 0.5) +
+  facet_wrap(~ book_title, scales = "free",ncol = 3) +
+  labs(title = "Distance Between Saviors Name - Distribution by Book",
+       x = "# Words",
+       y = "Count") +
+ theme_bw()+ 
+  theme(legend.position="none")
+
+```
+
+
+```{r}
+#| echo: false
+```
+
+## Conclusions
+
+The savior distribution varies with each book of the Book of Mormon. I see that Helaman has the longest distribution of all books while 4 Nephi has the longest. I think I am going to read 4 Nephi to learn more about Jesus.

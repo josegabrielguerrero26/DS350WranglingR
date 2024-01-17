@@ -1,0 +1,130 @@
+---
+title: "Car Wash"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## 1. Background
+
+A car wash business based in Rexburg, Idaho USA wants to see if the temperature hurts their bottom line. They have point of sale data for the months of April, May, June, and July. You will need to aggregate the data into hourly sales totals and merge the sales data together with the temperature data to provide insight into the relationship between temperature and car wash sales.
+
+## 2. Load Packages
+
+```{r}
+#| label: load_packages
+#| echo: true
+
+library(tidyverse)
+library(lubridate)
+library(downloader)
+
+```
+
+## In a R markdown file, read in the car wash data
+
+```{r}
+#| echo: false
+
+df<- download("https://byuistats.github.io/M335/data/carwash.csv",dest="myxl.csv", mode="wb")  
+df<-read_csv("myxl.csv")
+df1<- mutate(df, time = as.POSIXct(time, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+         business_time= with_tz(time,tz = "America/Mexico_City" ))
+
+
+#checking if something is missing
+#summary(df1)
+str(df1)
+which(is.na(df1))
+sum(is.na(df1))
+colSums(df1==0)
+
+df1<-df1%>%
+  filter(df1$amount >= 0)
+  
+hist(df1$business_time,
+  xlab = "business_time",
+  main = "Histogram of time",
+  breaks = sqrt(nrow(df1))
+)
+
+#adding column ceiling    
+df1<- mutate(df1, group_hour= ceiling_date(business_time, "hour"))
+
+df2<-df1 %>%
+    group_by(group_hour)%>%
+    summarize(business_time = n(),
+              amount = sum(amount))
+#df2
+#sort(df2$group_hour, decreasing = FALSE)
+```
+
+## Use riem_measures(station = "RXE", date_start = , date_end = ) for station RXE from library(riem) to get the Rexburg temperatures for the relevant dates. 
+
+
+```{r}
+#riem temperatures
+temp <-riem::riem_measures	(station = "RXE", date_start = "2016-05-13", date_end = "2016-07-18")
+temp1<- mutate(temp, group_hour= ceiling_date(valid, "hour"))
+
+#temp1
+temp2<-temp1 %>%
+    group_by(group_hour)%>%
+    summarize(business_time = n(),
+              average_temp = mean(tmpf,na.rm = TRUE),
+              average_temp2=mean(dwpf,na.rm = TRUE),)
+#temp2
+
+dfc<- df2 %>%
+      inner_join(temp2,by=c('group_hour'='group_hour'))
+head(dfc,5)
+
+```
+## Graph 1
+
+```{r}
+ggplot(data=dfc)+
+  geom_point(aes(x=group_hour, y=average_temp, size=amount, color=amount))+
+ theme_bw()+
+  ylab("Temperature in Fahrenheit ")+
+  xlab("Dates")+
+  ggtitle("Car Wash Analysis")+ theme(plot.title = element_text(hjust = 0.5))+# title+
+  labs(color="Revenue Amount")+
+  guides(size="none")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
+  )
+
+  
+```
+## Graph 2
+```{r}
+dcf1 <-dfc
+
+dcf1$hours <- format(dcf1$group_hour,"%H:%M:%S")
+
+ggplot(data=dcf1)+
+  geom_point(aes(x=hours, y=average_temp, size=amount, color=amount))+
+scale_colour_gradient(low = "red", high = "green")+
+ theme_classic()+
+  ylab("Temperature in Fahrenheit ")+
+  xlab("Hours of the Day")+
+  ggtitle("Car Wash Anlaysis")+ theme(plot.title = element_text(hjust = 0.5))+# title+
+  labs(color="Revenue Amount")+
+  guides(size="none")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
+)        
+    
+```
+
+
+
+## Conclusions
+Looking at the graphs, it seems that there is a relationship between seasons and car wash. In the first graph, as the temperature increase and the summer begins there are more sales. In the second graph, the hours is a huge deal for the car wash hours. I´d increase my workforce between 13:00pm and 18:00pm where the operations is concentrated. 
+
+

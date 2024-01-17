@@ -1,0 +1,97 @@
+---
+title: "W10 Task: Strings and Regular Expressions"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Resources
+Readings
+Chapter 14: R for Data Science—Strings: http://r4ds.had.co.nz/strings.html
+RVerbalExpressions package: https://github.com/VerbalExpressions/RVerbalExpressions
+regexr.com (optional): http://regexr.com/
+Regular Expression examples (optional): https://qntm.org/files/re/re.html
+Regular Expression support applet (optional): https://regex101.com/
+
+
+## Background
+
+Using g.r.e.p. (global regular expression print) and regular expressions (regex) to find character string patterns is a valuable tool in data analysis and is available with all operating systems and many different programming languages. It is a powerful tool once it is understood. The library(stringr) package makes these tools much easier to use.
+
+## Process
+The three tasks below can be completed in many different ways, but generally should not require many lines of code.
+
+### Step 1
+
+1. Use the readr::read_lines() function to read in each: string—randomletters.txt and randomletters_wnumbers.txt.
+
+2. With the randomletters.txt file, pull out every 1700 letter (for example, 1, 1700, 3400, 5100, …) and find the quote that is hidden—the quote ends with a period.
+
+
+```{r}
+#| label: load_packages
+#| echo: false
+
+library(tidyverse)
+
+
+```
+
+```{r}
+#| echo: false
+text1<-readr::read_lines("https://byuistats.github.io/M335/data/randomletters.txt")
+text2<-readr::read_lines("https://byuistats.github.io/M335/data/randomletters_wnumbers.txt")
+
+
+v1 <- strsplit(text1, "")[[1]]
+v1[seq(0, by = 1700,length(v1))]
+
+# func <- function(x, n, start = 0) {
+#   vapply(x, function(z) {
+#     i <- seq.int(start, nchar(z), by = n)
+#     i <- i[i > 0]
+#     paste(substring(x, i, i), collapse = "")
+#   }, character(1))
+# }
+
+#func(text1, 1700)
+
+
+```
+3. With the randomletters_wnumbers.txt file, find all the numbers hidden, and convert those numbers to letters using the letters order in the alphabet to decipher the message. For example, a 1=a, 2=b,…, 26=z (Hint: the message starts with “experts”).
+```{r}
+#| echo: false
+
+
+v1 <- str_extract_all(text2, "\\d+")
+
+message <- sapply(v1, function(nums) {
+  paste0(intToUtf8(as.integer(nums) + 96), collapse = "")
+})
+
+message <- paste(message, collapse = "")
+message
+
+```
+
+3. With the randomletters.txt file, remove all the spaces and periods from the string then find the longest sequence of vowels.
+
+```{r}
+#| echo: false
+
+vo <- str_replace_all(text1, "[\\s.]", "")
+vo_sequence <- str_extract_all(vo, "[aeiou]+") %>%
+  sapply(function(x) x[which.max(nchar(x))])
+
+vo_sequence
+```
+
+## Conclusions
+
+N/A

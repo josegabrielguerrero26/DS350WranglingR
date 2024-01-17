@@ -1,0 +1,80 @@
+---
+title: "W02 Case Study: Gapminder Part 1"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## 1. Background
+
+Use a .qmd file to recreate the graphic shown below using gapminder dataset from library(gapminder) (get them to match as closely as you can).
+
+## 2. Load packages as needed
+
+```{r}
+#| label: load_packages
+#| echo: true
+
+# library gapminder
+library(gapminder)
+library(tidyverse)
+```
+
+## 3. Understanding the Dataset
+
+**Head of the table**
+
+```{r}
+#| echo: false
+
+head(gapminder,5)
+
+```
+**Dataset description**
+```{r}
+#| echo: false
+
+str(gapminder)
+```
+
+## 3. Procedure
+
+**Removing Kuwait from data**
+
+```{r}
+#| echo: false
+df <- gapminder
+dffil <- filter(df,country!="Kuwait")
+str(dffil)
+```
+**Graph**
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 5
+
+gra <- ggplot(data = dffil)+
+  geom_point(mapping = aes(x=lifeExp, y=gdpPercap, color=continent, size=pop))+
+  facet_wrap(~ year, nrow = 1)+
+  theme_bw()+
+  scale_y_continuous(trans = "sqrt")+
+  xlim(NA,90)+
+  ylab("GCP per Capital")+
+  xlab("Life Expectancy")+
+  theme(axis.text = element_text(size = 5))+
+  theme(legend.title = element_text(size = 12))+
+  #scale_color_discrete("Name")+
+  scale_size("Population (100K)",labels = scales::unit_format(unit = "", scale = 1e-5))
+gra           
+```
+
+
+## Conclusions
+
+N/A

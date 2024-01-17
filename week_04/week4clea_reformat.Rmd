@@ -1,0 +1,91 @@
+---
+title: "Week 4 Clean and Reformat (aka tidy) Stock"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: false
+    code-tools: false
+---
+
+
+
+## Step1 
+Use the appropriate function in library(readr) to read in the .RDS file found on GitHub
+Depending on your computer, you should use read_rds(url("WEBLOCATION.RDS")) or read_rds("WEBLOCATION.RDS") to download and read the .RDS file type. Remember, R is case sensitive. Replace WEBLOCATION.RDS with the correct url address. When using file paths to read files in from Github (and other locations), you must pay attention to 'raw' vs. 'blob' (seeing the assigned reading).
+```{r,echo=FALSE}
+library(downloader)
+library(readxl)
+library(tidyverse)
+```
+Downloading
+```{r,echo=FALSE}
+download("https://github.com/byuistats/data/raw/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.RDS",
+         dest="myxl.RDS",
+         mode="wb")
+
+df <- read_rds("myxl.RDS")
+head(df,5)
+
+```
+#Step 2
+The contestant_period column is not “tidy” we want to create a month_end and a year_end column from the information it contains.
+
+```{r, echo=FALSE}
+df <- separate(df,contest_period,sep="-", into=c("Begining","month_end"))
+df1 <- separate(df,month_end, sep=-4,  into=c("month_end","year_end"))%>%
+select(month_end, year_end, variable, value)
+df1
+```
+## Step 3
+Save your “tidy” data as an .rds object. (see if you can read in the saved file!
+```{r}
+saveRDS(df1, file="taks4.rds")
+readRDS("taks4.rds")
+
+```
+## Step 4
+
+Use code to create a table of the DJIA returns that matches the table shown below (apply pivot_wider() to the data). Pay attention to detail.
+
+
+```{r}
+df2 <- filter(df1, variable=="DJIA")%>%
+  select(-variable)%>%
+  mutate(month_end= case_when(month_end == "Febuary" ~ "February", month_end == "Dec." ~ "December", TRUE ~ month_end))%>%
+  mutate(value = as.character(value)) %>%
+  mutate(value = if_else(is.na(value), "-", value)) %>%
+  pivot_wider(names_from = year_end, values_from = value, values_fill = "-") %>%
+  arrange(factor(month_end, levels = month.name)) 
+
+df2
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

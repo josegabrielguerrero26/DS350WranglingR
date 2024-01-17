@@ -1,0 +1,183 @@
+---
+title: "Week 4 Combining Height Files"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: false
+    code-tools: false
+---
+
+
+
+
+## Background 
+The Scientific American argues that humans have been getting taller over the years. As the data scientists that we are becoming, we would like to find data that validates or refutes this concept. Our challenge is to show different male heights across the centuries.
+
+This time, instead of looking at the mean height per country over time like we did for the previous task, we have a few files that contain heights of individuals. Each file represents a different time and/or place from which the individuals are sampled. We will combine the data from these files into one dataset to facilitate our visualization.
+
+
+
+```{r,echo=FALSE}
+library(downloader)
+library(readxl)
+library(tidyverse)
+library(janitor)
+library(foreign)
+library(haven)
+```
+
+
+## Step 1-3
+Work with these datasets where each row represents an individual. Import these five datasets into R.
+
+Downloading
+
+```{r,echo=FALSE}
+#source1
+download("https://byuistats.github.io/M335/data/heights/germanconscr.dta",
+         dest="gercons.dta",
+         mode="wb")
+dfgeconsr <- read_dta("gercons.dta")
+
+
+#source2
+download("https://byuistats.github.io/M335/data/heights/germanprison.dta",
+         dest="gerpri.dta",
+         mode="wb")
+dfgerpri <- read_dta("gerpri.dta")
+
+
+
+#source3
+download("https://byuistats.github.io/M335/data/heights/Heights_south-east.zip",
+         dest="heights.zip",
+         mode="wb")
+      unzip("heights.zip")
+dfheights <- read.dbf("B6090.DBF")
+
+
+#source4
+download("https://raw.githubusercontent.com/hadley/r4ds/main/data/heights.csv",
+         dest="bureau.csv",
+         mode="wb")
+dfbureau <- read_csv("bureau.csv")
+
+
+#source5
+download("http://www.ssc.wisc.edu/nsfh/wave3/NSFH3%20Apr%202005%20release/main05022005.sav",
+         dest="university.sav",
+         mode="wb")
+dfuniver <- read_sav("university.sav")
+
+
+
+#German Male Conscriptes 
+
+dfgeconsready <- dfgeconsr%>%
+              rename(height.cm = "height")%>%
+                mutate(height.in=(height.cm/2.54))%>%
+                mutate(birth_year= (bdec))%>%
+                mutate(study="German_Male")%>%
+                select(birth_year,height.in,height.cm,study)%>%
+                mutate_if(is.numeric, round, 1)
+
+#Heights Male conscripts
+dfgerpriMA <- dfgerpri%>%
+                mutate(height.in = height/2.54)%>%
+                mutate(birth_year= (bdec))%>%
+                mutate(study="Heig_Male_Consc")%>%
+                rename(height.cm = height)%>%
+                select(birth_year,height.in,height.cm,study)%>%
+                mutate_if(is.numeric, round, 1)
+
+#Heights of south- east and south....
+
+dfgerpriready <-dfheights%>%
+            select(one_of(c("GEBJ","CMETER"))) %>%
+            rename(birth_year = "GEBJ") %>%
+            rename(height.cm = "CMETER") %>%
+            mutate(height.in = (height.cm/2.54)) %>%
+            mutate(study = "Heig_south_east") %>%
+            select(birth_year,height.in,height.cm,study)%>%
+           mutate_if(is.numeric, round, 1)
+
+#Bureauof Labor
+
+dfbureauready <- dfbureau%>%
+            filter(sex == "male")%>%
+            select(one_of("height"))%>%
+            rename(height.in = height)%>%
+            mutate(height.cm = height.in*2.54)%>%
+            mutate(birth_year = "1950")%>%
+            mutate(study = "labor_stats")%>%
+            select(birth_year,height.in,height.cm,study)%>%
+            mutate_if(is.numeric, round, 1)
+
+dfbureauready$birth_year<- as.numeric(dfbureauready$birth_year)
+
+
+#University
+
+dfunivready <- dfuniver[, c("DOBY", "RT216F","RT216I")]
+dfunivready$DOBY <- dfunivready$DOBY + 1900 
+dfunivready$height.in <- (dfunivready$RT216F * 12) + dfuniver$RT216I
+dfunivready$height.cm = dfunivready$height.in * 2.54
+dfunivready$study = "University"
+colnames(dfunivready) <- c("birth_year", "", "", "height.in", "height.cm", "study")
+dfunivready = dfunivready %>% select(birth_year, height.in, height.cm, study)
+
+dfunivready
+#Adding data to same df
+
+dftota <-bind_rows(dfgeconsready,dfgerpriready,dfgerpriMA,dfunivready,dfbureauready)
+
+str(dftota)
+```
+
+## Step 4 Short paragraph
+In order to clean the data I follow the next steps:
+
+1. Download each file
+2. Assign each file to a variable
+3. Work with each variable
+    3.1 Understand the columns
+    3.2 Locate the needed columns
+    3.3 Rename columns
+    3.4 Make calculations if needed
+    3.5 Create new columns as needed
+    3.6 Select just needed columns
+4. Assign the work in step 3 to a new variable
+5. Verify the columns of each variable (data frames)
+6. Combine all variables in a single data frame.
+I decided to exclude all the others columns because there were not relevant to the homework task. I think some of the columns can be useful to answers other questions thought.
+
+
+## Step 5 Make a plot 
+
+  
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+#| 
+ggplot(data=dftota)+
+  geom_point(mapping = aes(y=height.in, x=birth_year, color=study))+
+  theme_classic()+
+  ylab("Height")+
+  xlab("Decades")+
+  ggtitle("Heights of Countries")+ theme(plot.title = element_text(hjust = 0.5))+# title
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## Step 6 conclusions
+The studies indeed reflect different conclusions. I do not see clear evidence that people is getting tall over time except for the Bureau of Labor Statistics Height data. It seems to me that this evidence goes in different directions than the previous study where you could cleary see a raising average over time. 
+
+Just looking at the German male in green color and the Heights of bavarian in skin color, it seems that up to the 19 hundreds there is not changes in height at all. I wonder if did something wrong when cleaning the data beacuse it does not have much sense.
+
+

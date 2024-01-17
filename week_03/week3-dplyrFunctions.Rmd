@@ -1,0 +1,224 @@
+---
+title: "Week 3 dplyr practice"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: show
+    toc: true
+    toc_float: true
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = TRUE)
+```
+
+```{r}
+#install.packages("nycflights13") #If you haven't installed the package that contains flight data yet, you will need to do this
+library(tidyverse)
+library(nycflights13)
+?factorial
+```
+
+## Basic data verbs from the dplyr package
+
+-   `filter()` filter your data to a smaller set of important rows.
+-   `arrange()` organize (aka sort) the row order of my data
+-   `select()` select specific columns to keep or remove
+-   `mutate()` add new mutated (changed) variables as columns to my data.
+
+The next two data verbs are normally used to summarise a dataset
+
+-   `summarise()` calculate summary of the columns specified
+-   `group_by()` divide your data into groups. Often used with `summarise`
+
+### Practice interpreting R syntax
+
+Write this code out in an English paragraph. (a possible solution is found at the end of this document)
+
+```{r weirdname, eval=FALSE, echo=TRUE}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+```
+
+### Practice writing code using dplyr package
+
+Use `filter()`, `arrange()`, `select()`, `mutate()`, `group_by()`, and `summarise()`. With `library(tidyverse)` tackle the following challenges.
+
+1.  Arrange the `iris` data by `Sepal.Length` and display the first six rows.
+2.  Select the `Species` and `Petal.Width` columns and put them into a new data set called `testdat`.
+3.  Create a new table that has the mean and standard deviation for petal width for each Species.
+
+```{}
+{r}
+#1
+iris %>% 
+#2
+``
+
+  
+```
+
+[Video walk through of solution](https://www.loom.com/share/5bd1f46a64a840498f8a3fabaf3b608c)
+
+## Other useful dplyr functions
+
+Almost every tidyverse package we learn in this class has a "cheat sheet". A cheat sheet is a 1 or 2 page document that serves as a primer/reminder for all the most important basics of a function. Check out the [cheatsheet for dplyr](https://github.com/rstudio/cheatsheets/blob/master/data-transformation.pdf).
+
+You can learn about functions using the `?` command. For example `?group_by()`.
+
+Take a few minutes to research the following functions. They will be helpful from time to ttime over the length of the course. Ensure you know what they are used for / how to use them.
+
+-   `distinct()` filters the dataset to only include values which are not repeated
+-   `n_distinct()` counts the number of rows that don't have repeat values
+-   `is.na()` logical check to see if something is NA. This is useful in a filter() command to filter out NA's filter(!is.na(variable_name))
+-   `case_when()` Takes the place of lots of if-else statements
+-   `top_n()` especially useful with group_by()
+-   `%in%` is useful for filtering a column of text values
+-   `lag()` can be used to reference a value from the preceeding row.
+
+Glance at the ranking functions on the dplyr cheat sheet as well.
+
+### Practice using other dplyr functions: iris
+
+You want to use the `%in%` function to filter the iris dataset to only include the versicolor and virginica species. Hint: There are many ways this can be done.
+
+```{r}
+
+```
+
+[Filter and `%in%` video solution](https://www.loom.com/share/774e85807c7d4c23b6d6d9109e4c42db)
+
+## Pseudocoding
+
+Pseudocoding is the process of identifying what steps will be required in your code in order to accomplish a task, without worrying about the specific syntax. Pseudocoding is usually written in plain english, such that someone unfamiliar with the R language can understand the "data verbs" and process. It can be written at a very high level, or it can be more granular in nature - tackling smaller steps. The point is that pseudocoding can be an effective strategy for approaching a data wrangling problem. One side benefit of this strategy is that as you learn more computer languages you can realize what you want to do and pick the most appropriate language, rather than letting the tools drive your process.
+
+Consider reading over Task 6 and Case Study 3 and writing pseudo code about how you plan to address it. You can then share this pseudocode with classmates to more quickly facilitate collaboration without getting bogged down in specific syntax.
+
+## Solutions
+
+### Paragraph to describe code chunk
+
+Take the flights dataset. For each destination, compute the following summary statistics: number of observations, the mean distance of the flight, and the mean arrival delay (be sure to remove missing values for both mean calculations). With this new table of summary statistics, remove statistics for flights to Honolulu and remove the statistics based on less than 20 flights during the year. Store the results table of summary statistics in an object called delays.
+`
+
+## Class practices
+```{r}
+nycflights13::flights
+
+
+```
+
+```{r}
+filter(flights, month==1,day==1)
+
+```
+```{r}
+jan1 <- filter(flights, month == 1, day == 1)
+jan1
+```
+```{r}
+near(sqrt(2) ^ 2,  2)
+near(1 / 49 * 49, 1)
+nov_dec <- filter(flights, month %in% c(11, 12))
+nov_dec
+```
+```{r}
+filter(flights, !(arr_delay > 120 | dep_delay > 120))
+filter(flights, arr_delay <= 120, dep_delay <= 120)
+```
+````{r}
+arrange(flights, year, month, day)
+arrange(flights, desc(dep_delay))
+````
+````{r}
+
+df <- tibble(x = c(5, 2, NA))
+arrange(df, desc(x))
+
+
+````
+````{r}
+# Select columns by name
+select(flights, year, month, day)
+
+````
+
+````{r}
+# adding a new variable
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+mutate(flights_sml,
+  gain = dep_delay - arr_delay,
+  speed = distance / air_time * 60
+)
+
+#only keeping new variables
+transmute(flights,
+  gain = dep_delay - arr_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+
+
+````
+````{r}
+
+#Agrup and measurement  
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+````
+````{r}
+#combination 
+
+by_dest <- group_by(flights, dest)
+delay <- summarise(by_dest,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE)
+)
+delay <- filter(delay, count > 20, dest != "HNL")
+
+# It looks like delays increase with distance up to ~750 miles 
+# and then decrease. Maybe as flights get longer there's more 
+# ability to make up delays in the air?
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+#> `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+````
+
+````{r}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+
+
+# eliminate NA
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay, na.rm = TRUE))
+
+````
+
+
+
+
+
+

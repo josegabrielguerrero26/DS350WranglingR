@@ -1,0 +1,67 @@
+---
+title: "Week 10 Publishing to a Shiny Server for Interactive Files"
+output: 
+  html_document:  
+    keep_md: false
+    toc: true
+    toc_float: true
+    code_folding: show
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = TRUE)
+
+```
+
+```{r include = FALSE}
+library(tidyverse, warn.conflicts = FALSE)
+```
+
+## R Shiny Server
+
+"Shiny Server is an open source back end program that makes a big difference. It builds a web server specifically designed to host Shiny apps. With Shiny Server you can host your apps in a controlled environment, like inside your organization, so your Shiny app (and whatever data it needs) will never leave your control. You can also use Shiny Server to make your apps available across the Internet when you choose. Shiny Server will host each app at its own web address and automatically start the app when a user visits the address. When the user leaves, Shiny Server will automatically stop the app."
+https://shiny.posit.co/r/articles/share/shiny-server/
+
+There are [3 ways to access a Shiny Server](https://posit.co/products/open-source/shinyserver/): Shiny Server open source, Posit Connect, and Shinyapps.io. BYU-Idaho pays for Posit Connect for the benefit of its students. 
+
+In this lesson we will demonstrate how to connect your RStudio to BYU-Idaho's shiny server so that you can publish interactive files there.
+
+## Publishing to R Studio Connect
+
+We will go through 4 steps to publish something using Posit Connect:
+
+  1. Ensure we can log-in to your Posit Connect account using BYU-Idaho credentials
+  2. Create an interactive document
+  3. Publish the interactive document to the Shiny Server via Posit Connect
+  4. The fourth step is not part of publishing, but it is necessary for this class so we can easily find your work. For your tasks that require interactive files, after publishing the file, get the web url and paste it into the tasks' readme file on Github so that classmates and teachers can go see your file (make sure the settings are set to allow others to view the file)
+
+### 1. Log-in to BYU-Idaho's Shiny Server
+
+First, visit this website: https://posit.byui.edu/connect/
+
+Click, "log in". When prompted for username and password, use the same credential you would use to log-in to BYU-Idaho systems like I-learn or my.byui.edu.
+
+### 2. Create an interactive document
+
+We will start simple with an interactive table. The code for the default interactive table is below.
+
+Look at the [DT: An R interface to the DataTables library](http://rstudio.github.io/DT/) website and find one or two modifications that you could make to your table output to move beyond the default. 
+
+```{r echo=TRUE}
+library(DT)
+datatable(iris)
+```
+
+When you have the table the way you want it, knit this file.
+
+### 3. Publish with Posit Connect
+
+Watch this **[video walk-through of the steps you need to complete the first time you publish](https://www.loom.com/share/84285a2c32ba4129a5b6efc34312b944)**. (note that we have switched over to Posit instead of RStudio connect). After you have published once, you will go through most of the same steps and selections to publish again. The difference will be that you do not need to add a new connection to the posit.byui.edu server each time, you can publish using the existing connection you just set-up in this step.
+
+
+### 4. Put the Posit Connect link on github 
+
+Don't forget to include the link to your interactive document on the shiny server in your readme.rmd for that particular assignment so that classmates, TA's, and teachers have easy access to your finished work and can admire the interactivity.

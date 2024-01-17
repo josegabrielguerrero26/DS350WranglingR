@@ -1,0 +1,128 @@
+---
+title: "W10 Case: Counting Words (stringr and forcats)"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Resources
+The Book of Mormon. This link is for reference only. You don’t have to read the full BOM before completing this assignment, but you should reading some each day :).
+
+## Background
+
+In 1978 Susan Easton Black stated, “Even statistically, he [Christ] is the dominant figure of the Book of Mormon.”
+
+With our strong “string” skills we are going to check her results and build an improved statistic using number of words between references.
+
+## Process
+
+### Step 1
+Get the scripture and savior name data into R.
+
+Scripture Text: Use the same data as the Counting Words task. You don’t have to download it again if you stored it on your computer. See the Counting Words for code to complete this step.
+
+Savior Names: Use read_rds(url("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds")) or read_rds("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds") to download and load the Savior names table into R. (Or try experimenting with rio::import() to read in the data)
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(readr)
+library(rio)
+library(tidyverse)
+library(plotly)
+
+scriptures <- rio::import("http://scriptures.nephi.org/downloads/lds-scriptures.csv.zip") %>%
+  as_tibble()
+names <- rio::import("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds") 
+
+
+```
+### Step 2
+Use the list of Savior names and the Book of Mormon text to find the distribution of number of words between references to the Savior.
+
+1. Split the string on each instance of a Savior name in the Book of Mormon
+2. Then count the number of words between each instance.
+```{r}
+#| echo: false
+
+
+bfm <- scriptures %>%
+  
+  filter(volume_title=="Book of Mormon" ) %>%
+  
+  select(scripture_text, book_title, book_id) %>%
+
+  group_by(book_title, book_id) %>%
+  
+  mutate(book_title = fct_inorder(as_factor(book_title))) %>%
+  
+  summarise(full_text = str_flatten(scripture_text, collapse = " "))
+
+#bfm
+scr1 <- str_flatten(names$name, collapse = "|")
+
+match <- function(string, expression){
+  
+  split <- str_split(string, expression) %>%
+    
+  unlist() 
+  
+  tibble(text = split, count_words = str_count(split, '\\w+'))}
+
+
+bom <- bfm %>%
+  
+  summarise(words = full_text %>%
+              
+              map(~ match(., scr1)[2]) %>%
+  
+               unlist()) %>%
+  
+  mutate(mean = format(mean(words), digits=2)) %>%
+   
+   mutate(index = row_number())
+
+
+
+bom1<-bom%>%  group_by(book_title)%>%
+    summarize(ave = format(mean(words), digits=2))
+    
+boml<-bom1$ave%>%as.integer(bom1$ave)
+
+head(bom, 15)
+```
+## Visualization
+Create a visualization of the distribution of words between savior names.
+Can you get the plot to “tell a story”?
+
+```{r}
+#| echo: false
+  
+    ggplot(data = bom, mapping = aes(x = fct_relevel(book_title, "Moroni", "Ether", "Mormon", "4 Nephi", "3 Nephi", "Helaman", "Alma", "Mosiah", "Words of Mormon", "Omni", "Jarom", "Enos", "Jacob", "2 Nephi", "1 Nephi"), y = words)) +
+  coord_flip() +
+  geom_violin() +
+  scale_y_continuous(trans = "log10") +
+  labs(x = " ",
+       y = "Number of Words between the Savior's Names",
+       title = "Number of Words between the Savior's Names",
+       subtitle = "in the Book of Mormon by book") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  geom_jitter(alpha = .12, size = .3) +
+  scale_x_discrete(labels = function(book) str_wrap(book, width = 10)) 
+  # geom_text(data = mean, aes(x = fct_relevel(book, "Moroni", "Ether", "Mormon", "4 Nephi", "3 Nephi", "Helaman", "Alma", "Mosiah", "Words of Mormon", "Omni", "Jarom", "Enos", "Jacob", "2 Nephi", "1 Nephi"),y = Inf, label = sprintf("Mean: %.2f", mean)), hjust = 1.2, color = "black", size = 3)
+
+
+  print(str_c("Average Words Between: ", format(mean(boml), digits=4)))
+```
+
+
+## Conclusions
+
+Graph is showing the distribution of the Jesus Christ names in the book of Mormon per book. It seems that Ether, Helaman, Alma are a few of then with the largest distribution. 

@@ -1,0 +1,98 @@
+---
+title: "W02 Case Study: Gapminder Part 2"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## 1. Background
+
+Use a .qmd file to recreate the graphic shown below using gapminder dataset from library(gapminder).
+
+## 2. Load packages as needed
+
+```{r}
+#| label: load_packages
+#| echo: true
+
+# library gapminder
+library(gapminder)
+library(ggplot2) 
+library(tidyverse)
+```
+
+## 3. Understanding the Dataset
+
+**Head of the table**
+
+```{r}
+#| echo: false
+
+head(gapminder,5)
+
+```
+**Dataset description**
+```{r}
+#| echo: false
+
+str(gapminder)
+```
+
+## 3. Procedure
+
+**Removing Kuwait from data and weighted metric**
+
+```{r}
+#| echo: false
+df <- gapminder
+dffil <- filter(df,country!="Kuwait")
+str(dffil)
+
+weighted <- dffil%>% 
+  group_by(continent, year) %>% 
+  summarise(continent_average = weighted.mean(gdpPercap, pop), country = country, pop_sum =  sum(pop)/100000) %>% 
+ 
+  ungroup
+```
+**Graph**
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+
+
+gra <- ggplot()+
+  
+  
+  geom_line(data=dffil, mapping = aes(x=year, y=gdpPercap, color=continent, group=country))+
+ 
+  geom_point(data=dffil, mapping = aes(x=year, y=gdpPercap, color=continent,group=country))+
+  facet_wrap(~ continent, nrow = 1)+
+  
+  
+  geom_line(data=weighted, mapping = aes(x=year, y=continent_average, group=continent ))+
+  
+  geom_point(data = weighted, mapping = aes(x = year, y = continent_average,  group = continent,size = pop_sum),alpha = 1) +
+
+  
+  
+  theme_bw()+
+  ylab("GCP per Capital")+
+  xlab("Year")+
+  theme(axis.text.x = element_text(size = 4.4))+
+  theme(legend.title = element_text(size = 12))+
+  guides(color=guide_legend("Continent"),size=guide_legend("Population (100k)"))
+gra           
+```
+
+
+## Conclusions
+
+N/A

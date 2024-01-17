@@ -1,0 +1,84 @@
+---
+title: "Week 4 Mean Heights of Countries Over Time"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: false
+    code-tools: false
+---
+
+
+
+## Background 
+The Scientific American argues that humans have been getting taller over the years. As the data scientists that we are becoming, we would like to find data that validates this concept.
+
+This project is not as severe as the two quotes below, but it will give you a taste of pulling various data and file formats together into “tidy” data for visualization and analysis.
+
+
+```{r,echo=FALSE}
+library(downloader)
+library(readxl)
+library(tidyverse)
+library(janitor)
+```
+
+## Step 1
+Read in and tidy the Worldwide heights estimates .xlsx file. After tidying the data it should look something like this (this is just a snippet of a part of the dataset, yours will have more rows of course).
+
+Downloading
+```{r,echo=FALSE}
+download("https://byuistats.github.io/M335/data/heights/Height.xlsx",
+         dest="myxl.xlsx",
+         mode="wb")
+
+df <- read_xlsx("myxl.xlsx")%>%
+  row_to_names(row_number = 2)
+
+df <- pivot_longer(df,c("1800":"2011"),names_to = "year_decade",values_to = "height.cm")
+
+df <-  filter(df,height.cm!="NA") %>%
+  arrange(year_decade)
+
+df<- rename(df,country="Continent, Region, Country")
+
+df1<- select(df, Code, country, height.cm, year_decade)%>%
+    mutate_if(is.numeric, round, 1)%>%
+    filter(!is.na(height.cm))
+
+head(df1,100)  
+
+```
+## Step 3
+Make a plot fit for presentation, with decade on the x-axis and and all the countries’ heights in inches on the y-axis; with the points from Germany highlighted based on the data from the .xlsx file.
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+dfinc <- df1 %>%
+  mutate(height.inc = (height.cm/2.54),
+         filtering = ifelse(df1$country == "Germany", "Germany", "Others"))%>%
+  mutate_if(is.numeric, round, 1)
+  
+#dfinc
+
+
+ggplot(data=dfinc, aes(y=height.inc,x=year_decade, color=filtering))+
+  geom_point(data = subset(dfinc,filtering=="Others", color = "black"))+
+  geom_point(data = subset(dfinc,filtering=="Germany", color = "red"),size=3.0)+
+  theme_classic()+
+  ylab("Height")+
+  xlab("Decades")+
+  ggtitle("Heights of Countries")+ theme(plot.title = element_text(hjust = 0.5))+# title
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+
+```
+## Concluion
+It´s some evidence that humans are getting taller. The spread through the years are getting bigger going upward. Germany, for example, shows that the height is increasing through the years.
+

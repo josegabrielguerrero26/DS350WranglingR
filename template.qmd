@@ -1,0 +1,46 @@
+---
+title: "W"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Resources
+
+
+## Background
+
+Place Task or Case Study Background Here
+
+## Process
+
+```{r}
+#| echo: false
+
+
+```
+
+```{r}
+#| echo: false
+```
+
+```{r}
+#| echo: false
+
+```
+
+## Graphs
+
+```{r}
+#| echo: false
+```
+
+## Conclusions
+
+Provide Your Concluding Remarks and Findings

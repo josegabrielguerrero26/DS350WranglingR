@@ -1,0 +1,160 @@
+---
+title: "Wings to Fly"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Background
+You just started your internship at a big firm in New York, and your manager gave you an extensive file of flights that departed JFK, LGA, or EWR in 2013. From this data (which you can obtain in R) your manager wants you to answer some specific questions.
+
+
+## 2. Use a flights dataset
+
+```{r}
+#| label: load_packages
+#| echo: true
+
+# library tidyverse and nycflights13 installed
+library(tidyverse)
+library(nycflights13)
+#install.packages('nycflights13')
+
+```
+
+#### Checking the format of the data
+
+```{r}
+#| echo: false
+
+head(nycflights13::flights,5)
+#summarise(flights, num_of_rows=n())
+
+str(flights)
+```
+
+## 3. Answering Questions
+
+### For each origin airport (JFK, EWR, LGA), which airline has the lowest 75th percentile of departure delay for flights scheduled to leave earlier than noon?
+
+Answer: US, EV and US, are located in the lowest 75% accordingly to the graph.
+
+```{r}
+#| label: picking variables 1
+#| echo: false
+#| #| fig-width: 15
+#| fig-height: 5
+
+
+df1= filter(flights,origin=="JFK"| origin=="EWR"| origin=="LGA", sched_dep_time<=1200)
+
+table1=select(df1,carrier,origin,dep_delay )%>%
+  group_by(origin)%>%
+  summary(df1)
+df1
+
+ggplot(data = df1)+
+  geom_boxplot(mapping = aes(x=carrier, y=dep_delay, color=carrier))+
+    coord_cartesian(ylim = c(-30, 50)) +
+   facet_wrap(~ origin, nrow = 3)+
+   labs(title = "Flights", y = "Delays in time", x = "Airline")+
+   theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+### Which origin airport is best to minimize my chances of a late arrival when I am using Delta Airlines?
+
+Answer: Delta Airlines only have 3 airports of origin and JFK is the one with less late arrival determined by the average.
+
+```{r}
+#| label: processes
+#| echo: false
+#| #| fig-width: 15
+#| fig-height: 5
+
+
+df2 <- filter(flights,carrier=="DL")%>%
+  group_by(origin) %>%
+  summarize(arrival_mean= mean(arr_delay, na.rm= TRUE))
+df2
+
+ggplot(data = df2)+
+  geom_col(mapping = aes(x=origin,y=arrival_mean, fill = origin))+
+  theme_bw()+
+  ylab("# Mean")+
+  xlab("Airports")+
+  ggtitle("Flights Delta")+ theme(plot.title = element_text(hjust = 0.5))+ # title+
+  guides(fill=guide_legend("Airports"))
+
+
+
+```
+
+### Which destination airport is the worst airport for arrival delays? You decide on the metric for “worst.”
+
+Answer: the worst destination airport in terms of arrival delays is CAE. I used a >15 mean value to describe worst.
+
+```{r}
+#| label: processes3
+#| echo: false
+#| #| fig-width: 15
+#| fig-height: 5
+
+
+df3 <- select(flights,dest,arr_delay)%>%
+  group_by(dest) %>%
+  summarize(arrival_mean= mean(arr_delay, na.rm= TRUE))%>%
+  filter(arrival_mean>15)
+
+arrange(df3, desc(arrival_mean))
+
+ggplot(data = df3)+
+  geom_col(mapping = aes(x=dest,y=arrival_mean, fill=dest))+
+  theme_bw()+
+  ylab("Mean Delay Time")+
+  xlab("Airport")+
+  ggtitle("Worst Destination")+ theme(plot.title = element_text(hjust = 0.5))+ # title+
+  guides(fill=guide_legend("Destinations"))
+
+
+
+```
+
+Disaggregated data by each airport (showing complexity of data)
+```{r}
+ggplot(df1, mapping = aes(x=factor(origin), y= dep_delay))+
+  geom_dotplot(aes(fill=origin,color=origin),binaxis = "y", binwidth = 0.2,dotsize = 0.5)+
+  theme(panel.grid.major = element_blank())+
+  labs(title = "Airport Delays", x = "Airport", y="Departure Delay")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

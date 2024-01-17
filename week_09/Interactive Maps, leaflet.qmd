@@ -1,0 +1,142 @@
+---
+title: "W09 Case Study: Interactive Maps, leaflet"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Resources
+
+### Readings
+
+In Leaflet for R read the following sections:
+
+-   Introduction
+-   The Map Widget
+-   Basemaps
+-   Markers
+-   Popups and Labels
+-   Lines and Shapes
+-   Colors
+-   Layers
+
+A gallery of tiles to consider is the Leaflet Providers Preview
+
+*http://leaflet-extras.github.io/leaflet-providers/preview/*
+
+### Guided Instruction
+
+-   Publishing to a Posit Server for Interactive Files: https://byuistats.github.io/M335/online_class/week10-shiny.Rmd
+
+-   Leaflet Basic.Rmd : https://byuistats.github.io/M335/online_class/week13-leaflet_basic.Rmd
+
+-   Leaflet Layers.Rmd : https://byuistats.github.io/M335/online_class/week13-leaflet_layers.Rmd (optional)
+
+-   Answer Key to Above Guided Instructions : https://byuistats.github.io/M335/online_class/week13-leaflet_activity_keys.html
+
+## Background
+
+You can recreate the previous map task, or find your own spatial data to display using leaflet. Consider using layers and control boxes to show time or other aspects of the data.
+
+## Recreate a Graph
+
+-  Recreate a previous task visualization using a simple leaflet plot using R OR
+
+-  Find your own spatial data that interests you and build a simple interactive map using leaflet You could experiment with using one (or both) of the two different kinds of layers.
+
+```{r}
+#| echo: false
+
+library(dplyr)
+library(tidyr)
+library(plotly)
+library(DT)
+library(leaflet)
+library(formattable)
+library(coronavirus)
+
+data(coronavirus)
+
+coronavirus<- filter(coronavirus,country=="Canada")
+
+#coronavirus
+
+df<-coronavirus %>%
+  filter(type != "recovery") %>%
+  group_by(type, province,lat, long) %>%
+  summarise(cases = sum(cases), .groups = "drop") %>%
+  mutate(type = factor(type, levels = c("confirmed", "death"))) %>%
+  pivot_wider(names_from = type, values_from = cases)%>%
+  mutate(death_rate = (death / confirmed)*100)#%>%
+
+df$death_rate<-percent(df$death_rate)
+
+
+  # mutate(death_rate = death / confirmed) %>%
+  # arrange(-death_rate) %>%
+  # datatable(rownames = FALSE,
+  #           colnames = c("Continent", "Confrimed Cases", "Death Cases","Death Rate %","lat","long")) %>%
+  # 
+
+datatable(df)
+
+```
+
+
+#### Covid Cases in Canada Graph 1
+
+```{r}
+#| echo: false
+
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = df$confirmed
+)
+
+leaflet() %>%
+  setView(lng = -100, lat = 60,zoom = 3.45) %>%
+  addTiles()%>%
+  addMarkers(data=df,~long, ~lat, popup = ~as.character(death_rate), label = ~as.character(province))
+  
+  # #addPolygons(data=df,~long, ~lat,stroke = FALSE, smoothFactor = 0.2, fillOpacity = 1,
+  #  # color = ~pal(confirmed))%>%
+  # 
+  # addLegend(data=df,"bottomright", pal = pal, values = ~confirmed,
+  #   title = "% of Confirm Case)",
+  #   labFormat = labelFormat(prefix = ""),
+  #   opacity = 1
+  # )
+
+```
+#### Covid Cases in Canada Graph 2
+
+```{r}
+#| echo: false
+pal <- colorNumeric(
+  palette = "viridis",
+  domain = df$confirmed
+)
+
+leaflet() %>%
+  setView(lng = -100, lat = 60,zoom = 3.45) %>%
+  addTiles()%>%
+  addCircles(data=df, ~long,~lat, 
+             radius = ~sqrt(confirmed)*100,
+              label = ~paste(province, death_rate),
+              color=  ~pal(confirmed),
+              fillOpacity = 1)
+
+
+
+```
+
+
+## Conclusions
+
+N/A

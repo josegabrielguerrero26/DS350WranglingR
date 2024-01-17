@@ -1,0 +1,12 @@
+name: interactive_maps_leaflet
+title: Interactive Maps, leaflet
+username: guerrerogjp
+account: guerrerogjp
+server: shiny.byui.edu
+hostUrl: https://shiny.byui.edu/__api__
+appId: 2305
+bundleId: 4676
+url: https://shiny.byui.edu/content/0fc12a82-829a-4e59-b687-71380693063f/
+version: 1
+asMultiple: FALSE
+asStatic: TRUE

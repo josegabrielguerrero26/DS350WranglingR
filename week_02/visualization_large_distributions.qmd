@@ -1,0 +1,75 @@
+---
+title: "Visualization Large Distributions with a Small Number of Layers"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## 1. Background
+
+You just started your internship at a big firm in New York, and your manager gave you an extensive file of flights that departed JFK, LGA, or EWR in 2013. From this data (which you can obtain in R) your manager wants you draw some insights.
+
+## 2. Use a Flights dataset
+
+```{r}
+#| label: load_packages
+#| echo: true
+
+# library tidyverse and nycflights13 installed
+library(tidyverse)
+# install.packages('nycflights13')
+
+```
+
+#### Example of the first rows of the data
+
+```{r}
+#| echo: false
+
+head(nycflights13::flights,5)
+
+```
+
+## 3. Picking variables and relationships (air_time and distance )
+
+### Air Time
+
+```{r}
+#| label: picking variables 1
+#| echo: false
+ggplot(data=nycflights13::flights)+
+  geom_histogram(mapping=aes( x = air_time), color= "White")
+
+```
+
+### distance
+
+```{r}
+#| label: picking variables 2
+#| echo: false
+ggplot(data=nycflights13::flights)+
+  geom_freqpoly(mapping=aes( x = distance), color= "black", linewidth=.5,linetype="dotted")
+```
+
+### Arrival time over departure delay
+
+```{r}
+#| label: picking variables
+#| echo: false
+ggplot(data=nycflights13::flights)+
+  geom_point(mapping=aes( x = arr_time, y = dep_delay), color= "blue", shape=2)
+```
+
+## Conclusions
+
+From the air time variable, we see that between 0 and 200 minutes represent 80% of air time. It may be that that the company only flight small distance or they like to go fast. It raises more question at this point.
+
+The second graph, we see the distance between airports. It´s not a surprise that the range it is big for more than 4,000 miles (at this point not central analysis was conducted to see how far). So, there are some close and far away airports.
+
+The last graph, is the relation between Arrival time over departure delay. it is interesting to see that even though there are considerable delays in departure the count of the arrival time is constant. We need further analyses against the forecast. I wonder if they are arriving on time or not.

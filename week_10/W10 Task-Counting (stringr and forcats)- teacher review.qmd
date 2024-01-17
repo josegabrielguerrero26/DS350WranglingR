@@ -1,0 +1,116 @@
+---
+title: "W10 Task: Counting Words (stringr and forcats)"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Resources
+The Book of Mormon. This link is for reference only. You don’t have to read the full BOM before completing this assignment, but you should reading some each day :).
+
+## Background
+
+In 1978 Susan Easton Black stated, “Even statistically, he [Christ] is the dominant figure of the Book of Mormon.”
+
+With our strong “string” skills we are going to check her results and build an improved statistic using number of words between references.
+
+## Process
+
+### Step 1
+Get the scripture and savior name data into R.
+
+Scripture Text: Use the same data as the Counting Words task. You don’t have to download it again if you stored it on your computer. See the Counting Words for code to complete this step.
+
+Savior Names: Use read_rds(url("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds")) or read_rds("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds") to download and load the Savior names table into R. (Or try experimenting with rio::import() to read in the data)
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(readr)
+library(rio)
+library(tidyverse)
+library(plotly)
+
+scriptures_data <- rio::import("http://scriptures.nephi.org/downloads/lds-scriptures.csv.zip") %>%
+  as_tibble()
+savior_names_data <- rio::import("https://byuistats.github.io/M335/data/BoM_SaviorNames.rds") %>%
+  as_tibble()
+savior_names <- str_c(savior_names_data$name, collapse = "|")
+
+
+```
+### Step 2
+Use the list of Savior names and the Book of Mormon text to find the distribution of number of words between references to the Savior.
+
+1. Split the string on each instance of a Savior name in the Book of Mormon
+2. Then count the number of words between each instance.
+```{r}
+#| echo: false
+
+
+bom_names <- scriptures_data %>%
+  filter(volume_short_title == "BoM")
+
+unique_names <- bom_names$book_title %>% unique()
+bom_dataframes <- unique_names %>%
+  map(
+    ~ scriptures_data %>%
+      filter(book_title == .x) %>%
+      pull(scripture_text) %>%
+      paste(collapse=" ") %>%
+      str_split(pattern = savior_names) %>%
+      unlist() %>%
+      as_tibble() %>%
+      mutate(book = .x) %>%
+      relocate(book)
+  )
+unique_names
+
+combined <- bom_dataframes %>%
+  bind_rows() %>%
+  filter(value != " ") %>%
+  rowwise() %>%
+  mutate(counts = str_count(value, '\\w+'))
+
+combined
+
+
+```
+
+## Visualization
+Create a visualization of the distribution of words between savior names.
+Can you get the plot to “tell a story”?
+
+```{r}
+#| echo: false
+
+mean_distances <- combined %>%
+  group_by(book) %>%
+  summarise(mean_distance = mean(counts))
+ggplot(data = combined, mapping = aes(x = fct_relevel(book, "Moroni", "Ether", "Mormon", "4 Nephi", "3 Nephi", "Helaman", "Alma", "Mosiah", "Words of Mormon", "Omni", "Jarom", "Enos", "Jacob", "2 Nephi", "1 Nephi"), y = counts)) +
+  coord_flip() +
+  geom_violin() +
+  scale_y_continuous(trans = "log10") +
+  labs(x = " ",
+       y = "Number of Words between the Savior's Names",
+       title = "Number of Words between the Savior's Names",
+       subtitle = "in the Book of Mormon by book") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  geom_jitter(alpha = .12, size = .3) +
+  scale_x_discrete(labels = function(book) str_wrap(book, width = 10)) +
+  geom_text(data = mean_distances, aes(x = fct_relevel(book, "Moroni", "Ether", "Mormon", "4 Nephi", "3 Nephi", "Helaman", "Alma", "Mosiah", "Words of Mormon", "Omni", "Jarom", "Enos", "Jacob", "2 Nephi", "1 Nephi"),
+                                       y = Inf, label = sprintf("Mean: %.2f", mean_distance)),
+            hjust = 1.2, color = "black", size = 3)
+```
+
+
+## Conclusions
+
+Graph is showing the distribution of the Jesus Christ names in the book of Mormon per book. It seems that Ether, Helaman, Alma are a few of then with the largest distribution. 
