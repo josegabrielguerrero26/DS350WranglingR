@@ -1,0 +1,113 @@
+---
+title: "Dealership Challenge"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Background
+
+Recreate the chart
+
+## Process
+
+### Step 1
+
+Packages
+
+```{r}
+
+#| echo: false
+
+
+library(downloader) 
+library(ggplot2) 
+library(tidyverse)
+
+```
+### Get the Data 
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+df<- download("https://byuistats.github.io/M335/data/dealers.csv", dest="myxl.csv", mode="wb")
+
+
+df<-read_csv("myxl.csv")
+
+# str(df)
+# sum(is.na(df))
+# colSums(df==0) 
+# head(df,5)
+# 
+# head(df1,5)
+
+df1<-df %>% pivot_longer(cols=c('BEACON', 'DRAPER',"FILMORE", "LAKESIDE","MARE VALLEY","NORTH","OAKLEY","ORLY","PIERCE","ROSEDALE","SEALY","SOUTHLAKE","SOUTHLAKE","WESTLAKE","WILDLAND"),
+                    names_to='Names',
+                    values_to='Total')
+df1
+# 
+#  df2<- df1%>%
+#  mutate( mycol1= separate_wider_delim(df1$...1, " ", names = c("A", "B")))
+# 
+#  df1$...1%>%separate_wider_delim(df1$...1, " ", names = c("A", "B"))
+
+ df1$year = as.character(lapply(strsplit(as.character(df1$...1), split=" "), "[", 1)) 
+
+
+ df1$year<- as.numeric(df1$year)    
+
+ df1 
+df2<-df1 %>%
+    group_by(year,Names)%>%
+    summarize(num_of_rows = n(),
+              sum = sum(Total))
+  df2$sum<-sort(df2$sum, decreasing = FALSE)
+ 
+df2 
+ 
+
+p<-ggplot()+
+  geom_col(data=df2, mapping = aes(x=Names, y=sum), fill="blue")+
+  facet_wrap(~ year, nrow = 1)+
+ theme_bw()+
+  ggtitle("Number of Car Sold by Dealership")+ theme(plot.title = element_text(hjust = 0.5))+# title
+  guides(size=guide_legend("Counts of Incidents"))+
+  theme(axis.text.x = element_blank(),
+         axis.title = element_blank(),
+        axis.ticks =element_blank(),
+         axis.title.y = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.line.x = element_blank()    
+  )+
+        
+  #geom_text(aes(label=sum),stat='count',position=position_dodge(0.9),vjust=-0.2)
+        
+        
+ geom_text  (data=df2, mapping = aes(x=Names, y=sum,label=sum),position=position_dodge(1),vjust=0, hjust=-0.1,size=3)
+    
+
+
+p + coord_flip()
+
+
+
+
+
+
+
+
+```
+
+
+## Conclusions
+
+NA

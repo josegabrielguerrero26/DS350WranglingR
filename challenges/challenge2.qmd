@@ -1,0 +1,113 @@
+---
+title: " Challenge 2"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Background
+
+Recreate the chart
+
+## Process
+
+### Step 1
+
+Packages
+
+```{r}
+#| echo: false
+
+
+library(downloader) 
+library(ggplot2) 
+library(tidyverse)
+
+```
+### Get the Data 
+
+```{r}
+#| echo: false
+
+
+df<- download("https://byuistats.github.io/M335/data/runners_100k.csv", dest="myxl.csv", mode="wb")
+
+
+df<-read_csv("myxl.csv")
+
+head(df,100)
+colnames(df)
+
+
+
+df1<-df%>%
+  filter( !is.na(clocktime))%>%
+  mutate(time_hour = clocktime/ 60)
+
+sum(is.na(df1))
+df1
+```
+
+
+## Graph
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+
+
+ggplot()+
+  theme_minimal()+
+geom_histogram(data=df1,aes(x=time_hour),binwidth = 0.02, fill="#C5C5C5")+
+geom_segment(data=df1,x = 2.5, xend = 2.5, y = 0, yend = 10, lty = 1, color="red")+
+geom_segment(data=df1,x = 3.5, xend = 3.5, y = 0, yend = 380, lty = 1, color="red")+
+geom_segment(data=df1,x = 4.5, xend = 4.5, y = 0, yend = 580, lty = 1, color="red")+
+geom_segment(data=df1,x = 5.5, xend = 5.5, y = 0, yend = 200, lty = 1, color="red")+
+labs(title = "Arbitrary goals, like round numbers, can be motivating- just ask 9 milion marathoners.",
+       caption ="Based on data from Eric Allen, USC Patricia Dechow, U.C Berkeley, Devin Rope and George Wu, University of Chicago.")+
+scale_x_continuous(breaks =seq(0.5,7.5, by=0.5),
+                  expand=expansion(add = c(-1.5,-6)),
+                   labels = c("","","", "", "2:30", "3:00", "3:30","4:00","4:30","5:00","5:30", "6:00", "6:30", "", ""))+
+
+annotate("text",
+           x = 1.8, y = 500,
+           label = "Distribution of Marathon
+           finishing times.", vjust = "top", hjust = "left",size = 3
+)+ 
+  annotate("text",
+           x = 1.8, y = 440,
+           label = "The small spikes are
+           people making their 
+           goals, with not
+           a minute to spare.
+           A finishing time of 3:59 
+           is 1.4 times as likely 
+           as one of 4:01.
+           ", vjust = "top", hjust = "left",size = 2.5
+) +
+  
+  theme(
+   panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+   panel.grid.major.y = element_blank(),
+   plot.caption = element_text(color="black", hjust=0, size=8, lineheight = 1.2),
+  plot.title = element_text(color="#444444", hjust=0, size=12, lineheight = 1.2),
+   axis.text.y= element_blank(),
+  axis.title= element_blank(),
+  axis.title.x = element_blank()
+
+)
+
+
+
+```
+
+
+NA

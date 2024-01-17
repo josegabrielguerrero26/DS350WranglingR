@@ -1,0 +1,72 @@
+---
+title: " Challenge 3"
+author: "Gabriel Guerrero"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+execute:
+  keep-md: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+---
+
+## Background
+
+Recreate the chart
+
+## Process
+
+### Step 1
+
+Packages
+
+```{r}
+#| echo: false
+
+
+library(downloader) 
+library(ggplot2) 
+library(tidyverse)
+library(stringr)
+```
+### Get the Data 
+
+```{r}
+#| echo: false
+
+
+df<- download("https://byuistats.github.io/M335/data/field_goal_data.csv", dest="myxl.csv", mode="wb")
+
+df<- read_csv("myxl.csv")
+
+
+substr_end <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+df
+colnames(df)
+
+df1 <- tibble(years=substring(df$Date,1,4),
+  number=as.numeric(gsub("[^0-9]","",df$Location)),
+                    outome=substr_end(df$Detail,8))%>%
+  mutate(yards=number+18,)%>%
+  group_by(years)%>%
+  summarise(yards= mean(yards))
+                
+df1
+
+ggplot(data=df1)+
+  geom_point(aes(x=yards,y=years))+
+  geom_line(aes(x=yards,y=years))+
+  labs(title = "Kickers are taking longer attents than ever", y = "Fiel-Goal percentage", x = "Average Kick distance (yards)",
+       subtitle="Field-goal percentage for all kicks vs average kick distance",)+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme(legend.position = "top")+
+  theme_bw()
+  
+
+
+```
+
