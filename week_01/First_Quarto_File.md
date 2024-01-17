@@ -1,0 +1,53 @@
+---
+title: "First_Quarto_File"
+date: "September 18, 2023"
+execute:
+  keep-md: true
+format:
+  html:
+    code-fold: true
+    code-line-numbers: true
+editor: visual
+---
+
+
+
+## Article 1
+
+**Daily new confirmed COVID-19 cases per million people.**
+
+This graph shows the new covid 19 cases in different countries. What is good about the visualization is that you can pick the countries, and time frame. I also like the fact that the page has different drop boxes for different dimensions. The log in the graph to demonstrate the time series is helpful. However, it could be better if the graph had a different time scale because it is overloaded. It does not adjust for a different date format.
+
+<https://ourworldindata.org/explorers/coronavirus-data-explorer?zoomToSelection=true&time=2020-03-01..latest&facet=none&country=USA~GBR~CAN~DEU~ITA~IND&pickerSort=asc&pickerMetric=location&Metric=Confirmed+cases&Interval=7-day+rolling+average&Relative+to+Population=true&Color+by+test+positivity=false>.
+
+## Article 2
+
+**E-commerce market share of leading e-retailers worldwide in 2021**
+
+This is a pie chart, and it represents all the leading E-commerce in the world. It is very clear what are the main participants in the market. I also like the fact that the page allows you to download the file in pdf, xls, png, and ppt. On the other hand, the pie will get saturated if there are several players, which is a problems for the reader.
+
+<https://www.statista.com/statistics/664814/global-e-commerce-market-share/>
+
+## Article 3
+
+**CBOE Volatility Index (\^VIX)**
+
+The ticker symbol VIX represent the volatility Index which is the popular measure of the stock market´s expectation of volatility based on S&P 500 index options. I like the graph because it is easily represented in a time series way. You can pick the time frame between 5 years up to 1 day. One thing it can be improved is that it could be represented in other ways. The graph does not allow us to compare periods over periods.
+
+<https://finance.yahoo.com/quote/%5EVIX?p=%5EVIX&.tsrc=fin-srch>
+
+## Graph
+
+**Plot**
+
+
+::: {.cell}
+
+```{.r .cell-code}
+plot(1:20)
+```
+
+::: {.cell-output-display}
+![](First_Quarto_File_files/figure-html/unnamed-chunk-1-1.png){width=672}
+:::
+:::
