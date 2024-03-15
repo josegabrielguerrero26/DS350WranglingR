@@ -1,7 +1,7 @@
 ---
 title: "Visualization Large Distributions with a Small Number of Layers"
 author: "Gabriel Guerrero"
-date: "September 19, 2023"
+date: "March 15, 2024"
 execute:
   keep-md: true
   warning: false
@@ -88,6 +88,6 @@ library(tidyverse)
 
 From the air time variable, we see that between 0 and 200 minutes represent 80% of air time. It may be that that the company only flight small distance or they like to go fast. It raises more question at this point.
 
-The second graph, we see the distance between airports. It´s not a surprise that the range it is big for more than 4,000 miles (at this point not central analysis was conducted to see how far). So, there are some close and far away airports. 
+The second graph, we see the distance between airports. It´s not a surprise that the range it is big for more than 4,000 miles (at this point not central analysis was conducted to see how far). So, there are some close and far away airports.
 
-The last graph, is the relation between Arrival time over departure delay. it is interesting to see that even though there are considerable delays in departure the count of the arrival time is constant. We need further analyses against the forecast. I wonder if they are arriving on time or not. 
+The last graph, is the relation between Arrival time over departure delay. it is interesting to see that even though there are considerable delays in departure the count of the arrival time is constant. We need further analyses against the forecast. I wonder if they are arriving on time or not.

@@ -1,9 +1,10 @@
 Useful_code
 # CLASS BOOK https://r4ds.had.co.nz/workflow-projects.html
 # Comment block: Shift + Crtl + C
-
+# test
 #libraries
 
+use_git_config(user.name = "josegabrielguerrero26", user.email = "josegabrielguerrero26@gmail.com")
 install.packages("USAboundariesData", repos = "https://ropensci.r-universe.dev", type = "source")
 install.packages("tidyquant")# tidyquant financial analysis
 
@@ -31,7 +32,7 @@ theme(legend.position = "top")+
 
 getwd()# directory location
 setwd("D:/OneDrive - AVASA/BYU-I/DS 350 Data Wrangling/DS350_FA23_Guerrero_Gabr")# change directory locaciton
-
+setwd("C:/Users/Gabriel Guerrero/OneDrive - AVASA/BYU-I/DS350WranglingR")
 setwd("C:/Users/Gabriel Guerrero/OneDrive - AVASA/BYU-I/DS 350 Data Wrangling/DS350_FA23_Guerrero_Gabr")
 
 

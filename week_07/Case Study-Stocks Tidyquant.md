@@ -1,7 +1,7 @@
 ---
 title: "Case Study: Stocks Tidyquant"
 author: "Gabriel Guerrero"
-date: "October 26, 2023"
+date: "March 15, 2024"
 execute:
   keep-md: true
   warning: false
@@ -71,7 +71,7 @@ to show who is winning at each day of the competition.
 ::: {.cell}
 ::: {.cell-output .cell-output-stdout}
 ```
-# A tibble: 536 × 3
+# A tibble: 728 × 3
 # Groups:   owner [2]
    owner  date        returns
    <chr>  <date>        <dbl>
@@ -85,7 +85,7 @@ to show who is winning at each day of the competition.
  8 Friend 2022-10-12 -0.0153 
  9 Friend 2022-10-13  0.0196 
 10 Friend 2022-10-14 -0.0394 
-# ℹ 526 more rows
+# ℹ 718 more rows
 ```
 :::
 
